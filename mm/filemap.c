@@ -9,6 +9,7 @@
  * most "normal" filesystems (but you don't /have/ to use this:
  * the NFS filesystem used to do this differently, for example)
  */
+#include <linux/launch_profile.h>
 #include <linux/export.h>
 #include <linux/compiler.h>
 #include <linux/dax.h>
@@ -39,6 +40,7 @@
 #include <linux/delayacct.h>
 #include <linux/psi.h>
 #include "internal.h"
+#include "mi_mtmr.h"
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/filemap.h>
@@ -916,6 +918,7 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 		if (!(gfp_mask & __GFP_WRITE) && shadow)
 			workingset_refault(page, shadow);
 		lru_cache_add(page);
+		mi_mtmr_ra_inserted(page);
 	}
 	return ret;
 }
@@ -2280,6 +2283,7 @@ page_ok:
 		 */
 
 		ret = copy_page_to_iter(page, offset, nr, iter);
+		dlp_collect(filp, ((u64)index << PAGE_SHIFT) + offset, ret);
 		offset += ret;
 		index += offset >> PAGE_SHIFT;
 		offset &= ~PAGE_MASK;
