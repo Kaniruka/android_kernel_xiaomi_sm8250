@@ -84,6 +84,17 @@ Real free commit/list ownership, direct-reclaim hook, cpuset/nodemask race, zero
 and memcg, KASAN/debug lifecycle, shrinker/refill and stop concurrency require
 device acceptance.
 
+mi_mempool: test_mi_mempool_early.py extracts the actual C21 reclaim-before
+policy, floor, pressure, cache, grant, probe and borrow functions. It covers
+exact comm/adj classification, order 0/1 two-branch floors at the 2816/2817
+available-page boundary, denied orders 4/5, pressure sampling and saturation,
+the pids transaction grammar and publication revalidation, exec/exit group
+liveness, state/cooldown/generation gates, cache capacity fail-closed,
+sample-versus-exec and sample-versus-stop races, and the untouched
+failure-after borrow. Host adapters replace allocator counters, the pool lock,
+RCU, pid and task APIs; it proves neither in-kernel concurrency, physical
+allocator/memcg behavior, device runtime nor performance.
+
 The global slab check extracts admission, mode control, pending take and
 serial scan functions. Its iterator and watermarks are substitutes: it checks
 control and reference protocol only, not real memcg offline, shrinkers, RCU,

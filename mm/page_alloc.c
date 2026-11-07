@@ -4784,6 +4784,16 @@ retry:
 			if (page)
 				goto got_pg;
 		}
+		/* C21 reclaim-before: prepared pages, full-block caller init. */
+		page = mi_mempool_early_borrow(gfp_mask, order,
+					       ac->preferred_zoneref->zone);
+		if (page) {
+			if (want_init_on_alloc(gfp_mask))
+				kernel_init_free_pages(page, 1 << order);
+			if (order && (gfp_mask & __GFP_COMP))
+				prep_compound_page(page, order);
+			goto got_pg;
+		}
 	}
 
 	/* Try direct reclaim and then allocating */

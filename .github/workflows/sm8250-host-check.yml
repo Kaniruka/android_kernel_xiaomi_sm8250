@@ -6,11 +6,18 @@ on:
       - drivers/block/zram/zram_drv.c
       - drivers/block/zram/zram_drv.h
       - fs/f2fs/file.c
+      - Documentation/vm/mi-mempool.rst
       - mm/mi_mtmr.c
       - mm/mi_mtmr.h
       - mm/Kconfig
       - mm/launch_profile.c
       - mm/kshrink_slabd.c
+      - mm/allocator_reserve.c
+      - mm/mi_mempool.c
+      - mm/mi_reclaim_pool.c
+      - mm/page_alloc.c
+      - include/linux/mi_mempool.h
+      - include/linux/mi_reclaim_pool.h
       - mm/mi_rmap_efficiency.c
       - mm/mi_rmap_efficiency.h
       - mm/readahead_limit.c

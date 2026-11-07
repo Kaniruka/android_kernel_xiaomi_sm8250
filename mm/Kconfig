@@ -1018,12 +1018,18 @@ config MOON_MMAP_OPT
 
 config MI_MEMPOOL
 	bool "Experimental allocator reserve for orders 0, 1, 4 and 5"
-	depends on ARM64 && ARM64_4K_PAGES && SYSFS && !MEMORY_HOTPLUG
+	depends on ARM64 && ARM64_4K_PAGES && SYSFS && !MEMORY_HOTPLUG && TRACEPOINTS
 	default n
 	help
-	  A runtime-disabled 6 MiB NORMAL-zone reserve for eligible failed
-	  order-zero, order-one and order-four allocations. Pressure releases
-	  stored pages. Experimental; requires target-device memory-pressure and concurrency validation.
+	  A runtime-disabled 7 MiB NORMAL-zone reserve. Orders zero, one,
+	  four and five may borrow prepared pages after an unsuccessful
+	  slowpath allocation; orders zero and one may additionally borrow
+	  before direct reclaim for typed whitelisted identities, with their
+	  own floor and pressure gate. Pressure releases stored pages.
+	  The reclaim-before gate uses the sched_process_exec and
+	  sched_process_exit tracepoints, so TRACEPOINTS is required.
+	  Experimental; requires target-device memory-pressure and
+	  concurrency validation.
 
 config MI_FAULT_AROUND
 	bool "UID fault-around selection (experimental)"

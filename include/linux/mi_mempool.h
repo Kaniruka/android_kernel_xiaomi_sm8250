@@ -5,10 +5,15 @@
 struct zone;
 #ifdef CONFIG_MI_MEMPOOL
 struct page *mi_mempool_borrow(gfp_t gfp, unsigned int order, struct zone *zone);
+struct page *mi_mempool_early_borrow(gfp_t gfp, unsigned int order,
+				     struct zone *zone);
 void mi_mempool_free_event(void);
 #else
 static inline struct page *mi_mempool_borrow(gfp_t gfp, unsigned int order,
 					    struct zone *zone) { return NULL; }
+static inline struct page *mi_mempool_early_borrow(gfp_t gfp, unsigned int order,
+						  struct zone *zone)
+{ return NULL; }
 static inline void mi_mempool_free_event(void) { }
 #endif
 /* Both allocator-reserve implementations must use this single arbiter. */
