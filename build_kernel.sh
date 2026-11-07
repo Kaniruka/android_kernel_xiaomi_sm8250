@@ -319,7 +319,7 @@ build_target() {
         O="${OUT_DIR}"
         ARCH="${ARCH}"
         SUBARCH="${SUBARCH}"
-        LOCALVERSION=
+        LOCALVERSION="-g$(git -C "${KERNEL_DIR}" rev-parse --short=12 HEAD)"
         LLVM=1
         LLVM_IAS=1
         CC="ccache clang"
