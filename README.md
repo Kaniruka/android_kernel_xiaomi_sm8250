@@ -60,10 +60,8 @@ For one device, run:
 
 Omitting the ROM selects both AOSP and MIUI builds for that device. Use the
 **Build Kernel** GitHub Actions workflow for a single device or **Build All
-Devices Kernel (Matrix Parallel + Release)** for the device matrix. For Dagu
-toolchain selection, outputs, script side effects, and CI coverage, see
-[Dagu build notes](Documentation/kbuild/dagu-build.md). The script and workflow
-files define the current build behavior.
+Devices Kernel (Matrix Parallel + Release)** for the device matrix. The script
+and workflow files define the current build behavior.
 
 The shared [MIUI/HyperOS feature configuration](Documentation/kbuild/sm8250-features.rst)
 applies to all supported devices on the `miui` build path. AOSP builds keep
