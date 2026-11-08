@@ -293,13 +293,60 @@ fi
 echo "==========================================="
 echo " [*] Initializing AnyKernel3 Workspace"
 echo "==========================================="
+# Upstream AnyKernel3 (osm0sis), pinned for reproducible installer/tools.
+# The former AstideLabs kona fork is no longer publicly accessible.
+ANYKERNEL_REF=41f04bdb4ee30a44e429c2c1131d5e8bb32b15f1
 rm -rf anykernel
-echo "[*] Cloning AnyKernel3..."
-git clone https://github.com/AstideLabs/AnyKernel3 -b kona --single-branch --depth=1 anykernel
-echo "[+] AnyKernel3 cloned successfully."
-echo "[*] Adjusting AnyKernel3..."
+git init -q anykernel
+git -C anykernel remote add origin https://github.com/osm0sis/AnyKernel3.git
+echo "[*] Fetching AnyKernel3 ${ANYKERNEL_REF}..."
+if ! GIT_TERMINAL_PROMPT=0 git -C anykernel fetch --depth=1 origin "$ANYKERNEL_REF"; then
+    echo "[!] AnyKernel3 download failed. Check network access to the public upstream."
+    exit 1
+fi
+git -C anykernel checkout -q --detach "$ANYKERNEL_REF"
+# Replace the upstream Galaxy Nexus example; retain its tools and license.
+# Each ZIP contains one ROM, so no installer-side ROM selection is needed.
+cat > anykernel/anykernel.sh <<'EOF'
+### AnyKernel3 install script
+## Based on AnyKernel3 by osm0sis @ xda-developers (see LICENSE).
+properties() { '
+kernel.string=APTKernel
+do.devicecheck=1
+do.modules=0
+do.systemless=0
+do.cleanup=1
+do.cleanuponabort=0
+device.name1=
+supported.versions=
+supported.patchlevels=
+supported.vendorpatchlevels=
+'; }
+
+BLOCK=boot;
+IS_SLOT_DEVICE=auto;
+SLOT_SELECT=active;
+RAMDISK_COMPRESSION=auto;
+PATCH_VBMETA_FLAG=0;
+. tools/ak3-core.sh;
+
+# Keep the existing ramdisk; replace only the packaged kernel/DT payloads.
+split_boot;
+flash_boot;
+flash_generic dtbo;
+
+# Upstream stages DTB separately on devices using split boot partitions.
+for dtb_partition in vendor_boot vendor_kernel_boot; do
+    if [ -f "$AKHOME/$dtb_partition-files/dtb" ]; then
+        BLOCK=$dtb_partition;
+        reset_ak;
+        split_boot;
+        flash_boot;
+    fi;
+done;
+EOF
 sed -i "s/^device\.name1=.*/device.name1=${DEVICE_NAME}/" anykernel/anykernel.sh
-echo "[*] AnyKernel3 adjusted successfully."
+echo "[+] AnyKernel3 ready."
 echo "==========================================="
 
 # ==========================================
@@ -509,15 +556,15 @@ build_target() {
         echo "[+] Kernel Image path: ${OUT_DIR}/arch/arm64/boot/Image"
 
         echo "[*] Packaging to AnyKernel3 ($OS_TYPE)..."
-        # 确保独立打包：清空现有的 kernels 目录
-        rm -rf anykernel/kernels/*
-        mkdir -p "anykernel/kernels/${OS_TYPE}/"
+        # Upstream AnyKernel3 reads payloads from the ZIP root. Remove the
+        # previous ROM's optional DTBO as well when building both variants.
+        rm -f anykernel/Image anykernel/dtb anykernel/dtbo.img
         
-        cp "${OUT_DIR}/arch/arm64/boot/Image" "anykernel/kernels/${OS_TYPE}/"
-        cp "${OUT_DIR}/arch/arm64/boot/dtb" "anykernel/kernels/${OS_TYPE}/"
+        cp "${OUT_DIR}/arch/arm64/boot/Image" anykernel/
+        cp "${OUT_DIR}/arch/arm64/boot/dtb" anykernel/
         
         if [ -f "${OUT_DIR}/arch/arm64/boot/dtbo.img" ]; then
-            cp "${OUT_DIR}/arch/arm64/boot/dtbo.img" "anykernel/kernels/${OS_TYPE}/"
+            cp "${OUT_DIR}/arch/arm64/boot/dtbo.img" anykernel/
         fi
         
         # 确定 ZIP 文件名
